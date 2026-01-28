@@ -188,20 +188,89 @@ function renderDrag(container, q) {
 function drag(ev) { ev.dataTransfer.setData("text", ev.target.innerText); }
 
 // --- DẠNG C: MATCH (Nối từ) ---
+let selectedLeft = null;
+let selectedRight = null;
+let matchesFound = 0;
+const MATCH_COUNT = 4; // Số cặp từ trong 1 câu hỏi nối từ
+
 function renderMatch(container, q) {
+    matchesFound = 0;
+    selectedLeft = null;
+    selectedRight = null;
+    
+    // Lấy thêm 3 từ ngẫu nhiên để tạo thành bộ 4 cặp nối
+    let matchPairPool = [q, ...vocabulary.filter(v => v.en !== q.en).sort(() => 0.5 - Math.random()).slice(0, MATCH_COUNT - 1)];
+    
+    // Tạo mảng xáo trộn cho 2 cột
+    let leftSide = matchPairPool.map(p => ({ text: p.en, id: p.en })).sort(() => 0.5 - Math.random());
+    let rightSide = matchPairPool.map(p => ({ text: p.vi, id: p.en })).sort(() => 0.5 - Math.random());
+
     container.innerHTML = `
-        <h2 class="q-title">Nối từ tiếng Anh với nghĩa đúng:</h2>
-        <div class="match-container">
-            <div class="match-box active-match" id="match-en">${q.en}</div>
-            <div class="match-options">
-                ${[q.vi, ...getRandomOptionsVi(q.vi, 2)].sort(() => 0.5 - Math.random()).map(v => 
-                    `<div class="match-item" onclick="checkMatch(this, '${v}', '${q.vi}')">${v}</div>`
-                ).join('')}
+        <h2 class="q-title">Nối các cặp từ tương ứng (Đúng sẽ biến mất)</h2>
+        <div class="match-grid" id="match-area">
+            <div class="match-column">
+                ${leftSide.map(item => `<div class="match-item" data-id="${item.id}" onclick="handleMatchSelect(this, 'left')">${item.text}</div>`).join('')}
+            </div>
+            <div class="match-column">
+                ${rightSide.map(item => `<div class="match-item" data-id="${item.id}" onclick="handleMatchSelect(this, 'right')">${item.text}</div>`).join('')}
             </div>
         </div>
     `;
 }
 
+function handleMatchSelect(el, side) {
+    if (el.classList.contains('hidden') || el.classList.contains('wrong')) return;
+
+    // Reset các lựa chọn cùng phía
+    const siblings = el.parentElement.querySelectorAll('.match-item');
+    siblings.forEach(s => s.classList.remove('selected'));
+    
+    el.classList.add('selected');
+
+    if (side === 'left') selectedLeft = el;
+    else selectedRight = el;
+
+    // Nếu đã chọn cả 2 bên
+    if (selectedLeft && selectedRight) {
+        const idLeft = selectedLeft.getAttribute('data-id');
+        const idRight = selectedRight.getAttribute('data-id');
+
+        if (idLeft === idRight) {
+            // ĐÚNG
+            const pairL = selectedLeft;
+            const pairR = selectedRight;
+            setTimeout(() => {
+                pairL.classList.add('hidden');
+                pairR.classList.add('hidden');
+            }, 300);
+            
+            matchesFound++;
+            selectedLeft = null;
+            selectedRight = null;
+
+            // Nếu đã nối hết các cặp
+            if (matchesFound === MATCH_COUNT) {
+                score++;
+                finishQuestion(true, "Hoàn thành nối từ", "Chính xác");
+            }
+        } else {
+            // SAI
+            selectedLeft.classList.add('wrong');
+            selectedRight.classList.add('wrong');
+            
+            const tempL = selectedLeft;
+            const tempR = selectedRight;
+
+            setTimeout(() => {
+                tempL.classList.remove('wrong', 'selected');
+                tempR.classList.remove('wrong', 'selected');
+            }, 800);
+
+            selectedLeft = null;
+            selectedRight = null;
+        }
+    }
+}
 function checkMatch(el, selected, correct) {
     const isCorrect = selected === correct;
     if(isCorrect) { el.classList.add('correct'); score++; }
