@@ -3,66 +3,333 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Vertical Farming Prep - Learn & Quiz</title>
-    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;600&display=swap" rel="stylesheet">
-    <link rel="stylesheet" href="style.css">
+    <title>Vertical Farming Vocabulary Master</title>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            --bg-gradient: linear-gradient(135deg, #e0c3fc 0%, #8ec5fc 100%);
+            --card-bg: rgba(255, 255, 255, 0.98);
+            --primary: #6c5ce7;
+            --secondary: #a29bfe;
+            --success: #00b894;
+            --error: #d63031;
+            --text: #2d3436;
+            --shadow: 0 10px 40px rgba(0,0,0,0.15);
+        }
+
+        * { box-sizing: border-box; margin: 0; padding: 0; }
+        body {
+            font-family: 'Inter', sans-serif;
+            background: var(--bg-gradient);
+            background-attachment: fixed;
+            color: var(--text);
+            min-height: 100vh;
+            display: flex;
+            justify-content: center;
+            padding: 20px;
+        }
+
+        .container {
+            width: 100%;
+            max-width: 850px;
+            background: var(--card-bg);
+            border-radius: 28px;
+            padding: 35px;
+            box-shadow: var(--shadow);
+            position: relative;
+        }
+
+        .screen { display: none; animation: fadeIn 0.4s ease; }
+        .screen.active { display: block; }
+
+        @keyframes fadeIn { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
+
+        h1 { text-align: center; margin-bottom: 25px; color: var(--primary); font-size: 2rem; }
+
+        /* TRANG 1: TỪ VỰNG */
+        .vocab-header { display: flex; gap: 12px; margin-bottom: 20px; position: sticky; top: 0; background: var(--card-bg); padding: 10px 0; z-index: 100; }
+        #search-input { flex: 1; padding: 14px 20px; border-radius: 15px; border: 2px solid #edeff2; outline: none; font-size: 1rem; transition: 0.3s; }
+        #search-input:focus { border-color: var(--secondary); box-shadow: 0 0 0 4px rgba(162, 155, 254, 0.1); }
+
+        .vocab-list { display: grid; grid-template-columns: repeat(auto-fill, minmax(320px, 1fr)); gap: 15px; max-height: 55vh; overflow-y: auto; padding: 5px; }
+        .vocab-item { background: #fff; padding: 18px; border-radius: 18px; border: 1px solid #f0f2f5; display: flex; justify-content: space-between; align-items: center; transition: 0.3s; box-shadow: 0 2px 5px rgba(0,0,0,0.02); }
+        .vocab-item:hover { transform: translateY(-3px); border-color: var(--secondary); box-shadow: 0 8px 15px rgba(0,0,0,0.05); }
+        .speaker-btn { background: #f3f0ff; border: none; width: 45px; height: 45px; border-radius: 12px; cursor: pointer; font-size: 20px; color: var(--primary); transition: 0.2s; }
+        .speaker-btn:hover { background: var(--primary); color: white; }
+
+        .btn-main { background: var(--primary); color: white; width: 100%; padding: 18px; border-radius: 15px; border: none; cursor: pointer; font-weight: 700; font-size: 1.1rem; margin-top: 25px; transition: 0.3s; }
+        .btn-main:hover { background: #5b4bc4; transform: scale(1.01); box-shadow: 0 10px 20px rgba(108, 92, 231, 0.2); }
+
+        /* TRANG 2: QUIZ */
+        .progress-bar-bg { width: 100%; height: 10px; background: #edeff2; border-radius: 10px; margin-bottom: 30px; overflow: hidden; }
+        .progress-bar-fill { height: 100%; background: var(--primary); width: 0%; transition: 0.4s; }
+        
+        .question-title { font-size: 1.4rem; font-weight: 700; margin-bottom: 25px; line-height: 1.4; text-align: center; }
+        .options-list { display: grid; gap: 12px; }
+        .opt-btn { padding: 18px; border: 2px solid #edeff2; border-radius: 16px; background: white; text-align: left; font-size: 1.05rem; cursor: pointer; transition: 0.2s; position: relative; }
+        
+        /* Hiệu ứng chọn đáp án */
+        .opt-btn.correct { background: var(--success) !important; color: white; border-color: var(--success); }
+        .opt-btn.wrong { background: var(--error) !important; color: white; border-color: var(--error); }
+        .opt-btn:disabled { cursor: default; }
+
+        .input-area { text-align: center; }
+        .fill-box { width: 100%; padding: 18px; font-size: 1.2rem; border: 2px solid #edeff2; border-radius: 16px; outline: none; margin-bottom: 15px; text-align: center; }
+        .fill-box.correct { border-color: var(--success); background: #e6faf4; }
+        .fill-box.wrong { border-color: var(--error); background: #fff1f1; }
+        
+        .feedback-text { font-weight: 700; margin-top: 15px; height: 24px; text-align: center; }
+
+        /* TRANG 3: TỔNG KẾT */
+        .score-display { text-align: center; margin: 20px 0; }
+        .score-num { font-size: 4rem; font-weight: 800; color: var(--primary); }
+        .review-container { max-height: 400px; overflow-y: auto; margin-top: 30px; padding-right: 10px; }
+        .review-card { padding: 15px; border-radius: 15px; margin-bottom: 12px; border-left: 6px solid #ccc; background: #f8f9fa; }
+        .review-card.is-ok { border-left-color: var(--success); background: #f0fffb; }
+        .review-card.is-not-ok { border-left-color: var(--error); background: #fff8f8; }
+    </style>
 </head>
 <body>
-    <div class="app-container">
-        <header>
-            <h1 id="main-title">Vertical Farming Hub</h1>
-            <p id="sub-title">Master 48 Academic Vocabulary Items</p>
-        </header>
 
-        <section id="screen-vocab" class="screen active">
-            <div class="controls">
-                <input type="text" id="search-input" placeholder="Tìm kiếm từ vựng...">
-                <button id="btn-start-quiz" class="btn-primary">BẮT ĐẦU ÔN TẬP 👉</button>
+<div class="container">
+    <section id="screen-vocab" class="screen active">
+        <h1>Vertical Farming Hub</h1>
+        <div class="vocab-header">
+            <input type="text" id="search-input" placeholder="Tìm kiếm từ hoặc nghĩa...">
+        </div>
+        <div class="vocab-list" id="vocab-display"></div>
+        <button class="btn-main" onclick="startQuiz()">Bắt đầu ôn tập (40 câu)</button>
+    </section>
+
+    <section id="screen-quiz" class="screen">
+        <div class="progress-bar-bg"><div class="progress-bar-fill" id="pb-fill"></div></div>
+        <div id="quiz-area"></div>
+        <div id="feedback" class="feedback-text"></div>
+    </section>
+
+    <section id="screen-result" class="screen">
+        <h1>Hoàn thành bài tập!</h1>
+        <div class="score-display">
+            <div class="score-num" id="res-score">0/40</div>
+            <p id="res-rank" style="font-weight: 600; font-size: 1.2rem;"></p>
+        </div>
+        <button class="btn-main" onclick="location.reload()">Học lại từ đầu 🔁</button>
+        <div class="review-container" id="res-details"></div>
+    </section>
+</div>
+
+<script>
+    // DỮ LIỆU GỐC TỪ FILE CỦA BẠN
+    const vocabulary = [
+        { en: "By the year", vi: "Trước năm" }, { en: "Urban centre", vi: "Trung tâm đô thị" },
+        { en: "Conservative estimates", vi: "Những ước tính dè dặt" }, { en: "Demographics", vi: "Dân số học" },
+        { en: "Current Demographic Trends", vi: "Xu hướng dân số học hiện tại" }, { en: "Traditional farming method", vi: "Phương pháp canh tác truyền thống" },
+        { en: "Raising crop", vi: "Trồng trọt" }, { en: "To be in vogue", vi: "Đang thịnh hành" },
+        { en: "To lay sth to waste", vi: "Phá hủy hoàn toàn cái gì" }, { en: "Poor management practice", vi: "Cách quản lý yếu kém" },
+        { en: "To live on sth", vi: "Sống dựa vào cái gì" }, { en: "Indoor farming", vi: "Trồng trọt trong nhà" },
+        { en: "The urgent need to do sth", vi: "Nhu cầu cấp bách làm gì" }, { en: "An entirely new approach", vi: "Một cách tiếp cận hoàn toàn mới" },
+        { en: "Cutting-edge technology", vi: "Công nghệ tiên tiến nhất" }, { en: "Vertical farm", vi: "Trang trại dọc" },
+        { en: "Horizontal farming", vi: "Canh tác theo chiều ngang" }, { en: "Multi storey", vi: "Nhiều tầng" },
+        { en: "Environmentally controlled conditions", vi: "Điều kiện môi trường được kiểm soát" }, { en: "To be situated in", vi: "Ở đâu đó / Tọa lạc tại" },
+        { en: "Proponent", vi: "Người ủng hộ" }, { en: "Urban renewal", vi: "Cải cách đô thị" },
+        { en: "Sustainable production", vi: "Sản xuất bền vững" }, { en: "Year-round production", vi: "Canh tác quanh năm" },
+        { en: "To be sacrificed for sth", vi: "Bị hy sinh cho cái gì" }, { en: "Take sth for granted", vi: "Coi cái gì là hiển nhiên" },
+        { en: "Despoil", vi: "Cướp bóc, chiếm đoạt" }, { en: "To turn sth into sth", vi: "Biến cái gì thành cái gì" },
+        { en: "Verdant, natural ecozone", vi: "Vùng sinh thái tự nhiên tươi tốt" }, { en: "Semi-arid desert", vi: "Sa mạc bán khô cằn" },
+        { en: "Within the same time frame", vi: "Cùng trong khoảng thời gian đó" }, { en: "Elements", vi: "Điều kiện thời tiết (khắc nghiệt)" },
+        { en: "To subject A to B", vi: "Bắt A phải chịu đựng B" }, { en: "Food-bearing plants", vi: "Cây lương thực" },
+        { en: "No more than hope for", vi: "Không thể làm gì hơn ngoài hy vọng" }, { en: "Massive flood", vi: "Trận lũ lớn" },
+        { en: "A long drought", vi: "Hạn hán kéo dài" }, { en: "Hurricane", vi: "Cuồng phong" },
+        { en: "Severe monsoons", vi: "Gió mùa khắc nghiệt" }, { en: "Valuable crops", vi: "Vụ mùa giá trị" },
+        { en: "Weather-related crop failures", vi: "Thất bát mùa màng do thời tiết" }, { en: "To eliminate the need for", vi: "Loại bỏ nhu cầu cho cái gì" },
+        { en: "Infectious disease", vi: "Bệnh truyền nhiễm" }, { en: "Acquire", vi: "Thu nhận / Đạt được" },
+        { en: "Consume energy", vi: "Tiêu thụ năng lượng" }, { en: "To appear to", vi: "Dường như" },
+        { en: "Variation", vi: "Biến thể / Dạng" }, { en: "More need to be done", vi: "Cần làm nhiều hơn nữa" }
+    ];
+
+    let quizList = [];
+    let currentIdx = 0;
+    let score = 0;
+    let userLogs = [];
+
+    // --- TIỆN ÍCH ---
+    function playAudio(isCorrect) {
+        const audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+        const oscillator = audioCtx.createOscillator();
+        const gainNode = audioCtx.createGain();
+        oscillator.connect(gainNode);
+        gainNode.connect(audioCtx.destination);
+        if (isCorrect) {
+            oscillator.frequency.setValueAtTime(523.25, audioCtx.currentTime); // C5
+            oscillator.frequency.exponentialRampToValueAtTime(880, audioCtx.currentTime + 0.1);
+        } else {
+            oscillator.frequency.setValueAtTime(220, audioCtx.currentTime); // A3
+            oscillator.frequency.linearRampToValueAtTime(110, audioCtx.currentTime + 0.2);
+        }
+        oscillator.start();
+        gainNode.gain.exponentialRampToValueAtTime(0.00001, audioCtx.currentTime + 0.5);
+        oscillator.stop(audioCtx.currentTime + 0.5);
+    }
+
+    function speak(text) {
+        const synth = window.speechSynthesis;
+        const utter = new SpeechSynthesisUtterance(text);
+        utter.lang = 'en-US';
+        synth.speak(utter);
+    }
+
+    // --- MÀN HÌNH TỪ VỰNG ---
+    function renderVocab(list = vocabulary) {
+        const display = document.getElementById('vocab-display');
+        display.innerHTML = list.map(item => `
+            <div class="vocab-item">
+                <div>
+                    <strong style="color:var(--primary); font-size:1.1rem">${item.en}</strong><br>
+                    <span style="color:#636e72">${item.vi}</span>
+                </div>
+                <button class="speaker-btn" onclick="speak('${item.en}')">🔊</button>
             </div>
-            <div class="vocab-grid" id="vocab-list">
-                </div>
-        </section>
+        `).join('');
+    }
 
-        <section id="screen-quiz" class="screen">
-            <div class="quiz-header">
-                <div class="progress-container">
-                    <div class="progress-bar" id="progress-bar"></div>
+    document.getElementById('search-input').addEventListener('input', (e) => {
+        const val = e.target.value.toLowerCase();
+        const filtered = vocabulary.filter(v => v.en.toLowerCase().includes(val) || v.vi.toLowerCase().includes(val));
+        renderVocab(filtered);
+    });
+
+    // --- QUIZ LOGIC ---
+    function startQuiz() {
+        // Trộn ngẫu nhiên 40 câu từ 48 từ
+        const shuffled = [...vocabulary].sort(() => 0.5 - Math.random());
+        quizList = shuffled.slice(0, 40).map((item, i) => {
+            const type = i < 20 ? 'MCQ' : 'FILL'; // 20 câu trắc nghiệm, 20 câu điền từ
+            const options = type === 'MCQ' ? 
+                [item.vi, ...vocabulary.filter(v => v.vi !== item.vi).sort(() => 0.5 - Math.random()).slice(0,3).map(v => v.vi)].sort(() => 0.5 - Math.random()) 
+                : [];
+            return { ...item, type, options };
+        });
+        document.querySelectorAll('.screen').forEach(s => s.classList.remove('active'));
+        document.getElementById('screen-quiz').classList.add('active');
+        showQuestion();
+    }
+
+    function showQuestion() {
+        const q = quizList[currentIdx];
+        const area = document.getElementById('quiz-area');
+        const feedback = document.getElementById('feedback');
+        feedback.innerText = "";
+        document.getElementById('pb-fill').style.width = `${(currentIdx / 40) * 100}%`;
+
+        if (q.type === 'MCQ') {
+            area.innerHTML = `
+                <div class="question-title">Câu ${currentIdx+1}/40: Nghĩa của "<span style="color:var(--primary)">${q.en}</span>" là gì?</div>
+                <div class="options-list">
+                    ${q.options.map(opt => `<button class="opt-btn" onclick="handleMCQ(this, '${opt}')">${opt}</button>`).join('')}
                 </div>
-                <div class="quiz-info">
-                    <span id="question-number">Câu hỏi 1/40</span>
-                    <span id="quiz-timer">Dạng: <strong id="question-type">Trắc nghiệm</strong></span>
+            `;
+        } else {
+            area.innerHTML = `
+                <div class="question-title">Câu ${currentIdx+1}/40: Viết từ tiếng Anh tương ứng:</div>
+                <div style="text-align:center; font-size:1.5rem; font-weight:700; color:var(--primary); margin-bottom:20px">${q.vi}</div>
+                <div class="input-area">
+                    <input type="text" id="user-input" class="fill-box" placeholder="Gõ đáp án..." autofocus autocomplete="off">
+                    <button class="btn-main" id="submit-btn" onclick="handleFill()">Gửi đáp án</button>
+                    <p style="color:#636e72; margin-top:10px">Gợi ý: ${q.en.charAt(0)}... (${q.en.length} ký tự)</p>
                 </div>
+            `;
+            document.getElementById('user-input').addEventListener('keypress', (e) => { if(e.key === 'Enter') handleFill(); });
+        }
+    }
+
+    function handleMCQ(btn, selected) {
+        const q = quizList[currentIdx];
+        const isCorrect = (selected === q.vi);
+        const feedback = document.getElementById('feedback');
+        const allBtns = document.querySelectorAll('.opt-btn');
+
+        allBtns.forEach(b => {
+            b.disabled = true; // Chống bấm nhiều lần
+            if (b.innerText === q.vi) b.classList.add('correct');
+        });
+
+        if (isCorrect) {
+            score++;
+            playAudio(true);
+            feedback.innerText = "Chính xác! ✨";
+            feedback.style.color = "var(--success)";
+        } else {
+            btn.classList.add('wrong');
+            playAudio(false);
+            feedback.innerText = "Sai rồi! 😢";
+            feedback.style.color = "var(--error)";
+        }
+
+        saveLog(q.en, selected, q.vi, isCorrect);
+        setTimeout(nextStep, 1200); // Chuyển câu sau 1.2s để học sinh nhìn đáp án
+    }
+
+    function handleFill() {
+        const input = document.getElementById('user-input');
+        const btn = document.getElementById('submit-btn');
+        const q = quizList[currentIdx];
+        const val = input.value.trim();
+        const isCorrect = (val.toLowerCase() === q.en.toLowerCase());
+        const feedback = document.getElementById('feedback');
+
+        input.disabled = true;
+        btn.disabled = true;
+
+        if (isCorrect) {
+            score++;
+            input.classList.add('correct');
+            playAudio(true);
+            feedback.innerText = "Tuyệt vời! 🔥";
+            feedback.style.color = "var(--success)";
+        } else {
+            input.classList.add('wrong');
+            playAudio(false);
+            feedback.innerText = `Sai rồi. Đáp án đúng: ${q.en}`;
+            feedback.style.color = "var(--error)";
+        }
+
+        saveLog(q.vi, val || "(Trống)", q.en, isCorrect);
+        setTimeout(nextStep, 2000); // Câu điền từ để lâu hơn chút (2s) để nhìn lỗi chính tả
+    }
+
+    function saveLog(q, u, c, ok) {
+        userLogs.push({ q, u, c, ok });
+    }
+
+    function nextStep() {
+        currentIdx++;
+        if (currentIdx < 40) showQuestion();
+        else showFinal();
+    }
+
+    function showFinal() {
+        document.querySelectorAll('.screen').forEach(s => s.classList.remove('active'));
+        document.getElementById('screen-result').classList.add('active');
+        document.getElementById('res-score').innerText = `${score}/40`;
+        
+        let rank = "";
+        if(score >= 36) rank = "Master 🌟 (Xuất sắc)";
+        else if(score >= 28) rank = "Advanced 💪 (Giỏi)";
+        else if(score >= 20) rank = "Improving 📘 (Khá)";
+        else rank = "Beginner 🌱 (Cần cố gắng)";
+        document.getElementById('res-rank').innerText = rank;
+
+        const details = document.getElementById('res-details');
+        details.innerHTML = userLogs.map((log, i) => `
+            <div class="review-card ${log.ok ? 'is-ok' : 'is-not-ok'}">
+                <strong>Câu ${i+1}: ${log.q}</strong><br>
+                <span>Của bạn: <span style="color:${log.ok ? 'green' : 'red'}">${log.u}</span></span><br>
+                ${!log.ok ? `<span>Đáp án đúng: <b style="color:green">${log.c}</b></span>` : ''}
             </div>
+        `).join('');
+    }
 
-            <div id="question-container" class="question-card">
-                </div>
-
-            <div class="quiz-footer">
-                <button id="btn-next" class="btn-primary" disabled>CÂU TIẾP THEO</button>
-            </div>
-        </section>
-
-        <section id="screen-result" class="screen">
-            <div class="result-card">
-                <h2 id="rank-title">Xếp loại: Master 🌟</h2>
-                <div class="score-circle">
-                    <span id="final-score">40</span>/40
-                </div>
-                <p id="score-detail">Bạn đã trả lời đúng 40/40 câu hỏi.</p>
-                
-                <div class="result-actions">
-                    <button onclick="location.reload()" class="btn-secondary">LÀM LẠI 🔁</button>
-                    <button id="btn-home" class="btn-primary">TRỞ VỀ TRANG CHỦ 🏠</button>
-                </div>
-
-                <div class="review-section">
-                    <h3>Chi tiết bài làm:</h3>
-                    <div id="review-list"></div>
-                </div>
-            </div>
-        </section>
-    </div>
-
-    <script src="script.js"></script>
+    renderVocab();
+</script>
 </body>
 </html>
